@@ -13,7 +13,7 @@ import static org.model.ConvolucionMatrices.kEnfoque;
 
 public class ControladorImagenes {
 
-    private VentanaPrincipal vista;
+    private final VentanaPrincipal vista;
     private BufferedImage imagenOriginal;
     private BufferedImage imagenModificada;
 
@@ -45,20 +45,12 @@ public class ControladorImagenes {
         vista.getBtnExtraerBits().addActionListener(e -> aplicarFiltro(() ->
                 imagenModificada = FiltrosRetro.extraerBits(imagenOriginal, 0x07, 7))); // Máscara 3 bits (0x07)
 
-        // Los gradientes pueden generarse sin necesidad de cargar una foto previa
-        vista.getBtnGradLineal().addActionListener(e -> {
-            int w = (imagenOriginal != null) ? imagenOriginal.getWidth() : 800;
-            int h = (imagenOriginal != null) ? imagenOriginal.getHeight() : 600;
-            imagenModificada = GeneradorGradientes.generarLinealIzquierdaDerecha(w, h);
-            vista.setImagenProcesada(new ImageIcon(imagenModificada));
-        });
+        // Los gradientes ahora modifican el alpha de la imagen cargada
+        vista.getBtnGradLineal().addActionListener(e -> aplicarFiltro(() ->
+                imagenModificada = GeneradorGradientes.generarLinealIzquierdaDerecha(imagenOriginal)));
 
-        vista.getBtnGradRadial().addActionListener(e -> {
-            int w = (imagenOriginal != null) ? imagenOriginal.getWidth() : 800;
-            int h = (imagenOriginal != null) ? imagenOriginal.getHeight() : 600;
-            imagenModificada = GeneradorGradientes.generarRadial(w, h);
-            vista.setImagenProcesada(new ImageIcon(imagenModificada));
-        });
+        vista.getBtnGradRadial().addActionListener(e -> aplicarFiltro(() ->
+                imagenModificada = GeneradorGradientes.generarRadial(imagenOriginal)));
 
         // ==========================================
         // EVENTOS PESTAÑA 2: HSV
