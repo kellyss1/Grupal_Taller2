@@ -1,21 +1,36 @@
-import com.formdev.flatlaf.FlatDarkLaf;
+package org.view;
+
+import com.formdev.flatlaf.FlatLightLaf;
 import org.controller.ControladorImagenes;
-import org.view.VentanaPrincipal;
-import javax.swing.SwingUtilities;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class Main {
     public static void main(String[] args) {
-        // 1. Activar FlatLaf (El "Look and Feel" moderno)
-        FlatDarkLaf.setup();
+
+        FlatLightLaf.setup();
+
+        // 🎨 PALETA BLANCO + AZUL ELÉCTRICO
+        UIManager.put("Component.arc", 15);
+        UIManager.put("Button.arc", 15);
+        UIManager.put("TextComponent.arc", 10);
+
+        UIManager.put("Component.focusWidth", 1);
+
+        UIManager.put("Component.accentColor", new Color(0, 120, 255));
+        UIManager.put("Button.background", new Color(0, 120, 255));
+        UIManager.put("Button.foreground", Color.WHITE);
+        UIManager.put("Button.hoverBackground", new Color(30, 140, 255));
+
+        UIManager.put("Panel.background", new Color(245, 250, 255));
+        UIManager.put("TabbedPane.background", new Color(245, 250, 255));
+
+        UIManager.put("defaultFont", new Font("Segoe UI", Font.PLAIN, 13));
 
         SwingUtilities.invokeLater(() -> {
-            // 2. Creamos la Vista (La pantalla)
             VentanaPrincipal vista = new VentanaPrincipal();
-
-            // 3. Creamos el Controlador y le pasamos la Vista para que la maneje
-            ControladorImagenes controlador = new ControladorImagenes(vista);
-
-            // 4. Encendemos la ventana
+            new ControladorImagenes(vista);
             vista.setVisible(true);
         });
     }

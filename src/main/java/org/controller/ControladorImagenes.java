@@ -1,15 +1,15 @@
 package org.controller;
 
-import org.model.FiltrosBasicos;
-import org.model.FiltrosRetro;
-import org.model.GeneradorGradientes;
-import org.model.Convolucion;
+import org.model.*;
 import org.view.VentanaPrincipal;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+
+import static org.model.ConvolucionMatrices.kBordes;
+import static org.model.ConvolucionMatrices.kEnfoque;
 
 public class ControladorImagenes {
 
@@ -50,14 +50,14 @@ public class ControladorImagenes {
             int w = (imagenOriginal != null) ? imagenOriginal.getWidth() : 800;
             int h = (imagenOriginal != null) ? imagenOriginal.getHeight() : 600;
             imagenModificada = GeneradorGradientes.generarLinealIzquierdaDerecha(w, h);
-            vista.setImagenPantalla(new ImageIcon(imagenModificada));
+            vista.setImagenProcesada(new ImageIcon(imagenModificada));
         });
 
         vista.getBtnGradRadial().addActionListener(e -> {
             int w = (imagenOriginal != null) ? imagenOriginal.getWidth() : 800;
             int h = (imagenOriginal != null) ? imagenOriginal.getHeight() : 600;
             imagenModificada = GeneradorGradientes.generarRadial(w, h);
-            vista.setImagenPantalla(new ImageIcon(imagenModificada));
+            vista.setImagenProcesada(new ImageIcon(imagenModificada));
         });
 
         // ==========================================
@@ -74,6 +74,32 @@ public class ControladorImagenes {
 
         vista.getBtnConvolucion9x9().addActionListener(e -> aplicarFiltro(() ->
                 imagenModificada = Convolucion.convolucion9x9(imagenOriginal)));
+
+
+        // ==========================================
+        // EVENTOS PESTAÑA 4: CONVOLUCIÓN CON MATRICES PREDEFINIDAS
+        vista.getBtnBordes().addActionListener(e -> aplicarFiltro(() ->
+                imagenModificada = ConvolucionMatrices.aplicarKernel(imagenOriginal, kBordes, 3)
+        ));
+
+        vista.getBtnEnfoque().addActionListener(e -> aplicarFiltro(() ->
+                imagenModificada = ConvolucionMatrices.aplicarKernel(imagenOriginal, kEnfoque, 3)
+        ));
+            vista.getBtnAclarar().addActionListener(e -> aplicarFiltro(() ->
+                    imagenModificada = ConvolucionMatrices.aplicarKernel(imagenOriginal, ConvolucionMatrices.kAclaracion, 3)
+            ));
+            vista.getBtnOscurecer().addActionListener(e -> aplicarFiltro(() ->
+                    imagenModificada = ConvolucionMatrices.aplicarKernel(imagenOriginal, ConvolucionMatrices.kOscurecer, 3)
+            ));
+                vista.getBtnEnfoque9x9().addActionListener(e -> aplicarFiltro(() ->
+                        imagenModificada = ConvolucionMatrices.aplicarKernel(imagenOriginal, ConvolucionMatrices.kEnfoque9x9, 9)
+                ));
+                vista.getBtnDesenfoque().addActionListener(e -> aplicarFiltro(() ->
+                        imagenModificada = ConvolucionMatrices.aplicarKernel(imagenOriginal, ConvolucionMatrices.kBlur, 3)
+                ));
+
+
+
     }
 
     // --- MÉTODOS DE APOYO ---
@@ -82,7 +108,7 @@ public class ControladorImagenes {
     private void aplicarFiltro(Runnable filtroMatematico) {
         if (imagenOriginal != null) {
             filtroMatematico.run(); // Ejecuta la línea de código del Modelo que le enviamos
-            vista.setImagenPantalla(new ImageIcon(imagenModificada));
+            vista.setImagenProcesada(new ImageIcon(imagenModificada));
         } else {
             JOptionPane.showMessageDialog(vista, "⚠️ ¡Primero debes abrir una imagen!", "Aviso", JOptionPane.WARNING_MESSAGE);
         }
@@ -96,7 +122,9 @@ public class ControladorImagenes {
             File archivoSeleccionado = explorador.getSelectedFile();
             try {
                 imagenOriginal = ImageIO.read(archivoSeleccionado);
-                vista.setImagenPantalla(new ImageIcon(imagenOriginal));
+
+                vista.setImagenOriginal(new ImageIcon(imagenOriginal));
+                vista.setImagenProcesada(null); // limpiar derecha
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(vista, "Error al leer la imagen: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }

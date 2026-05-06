@@ -5,50 +5,85 @@ import java.awt.*;
 
 public class VentanaPrincipal extends JFrame {
 
-    private JLabel lblImagen;
+    private JLabel lblOriginal;
+    private JLabel lblProcesada;
+
     private JButton btnCargarImagen;
 
-    // Botones Pestaña 1: RGB y Bits
     private JButton btnFiltroGrises, btnFiltroNegativo, btnVidrioEsmerilado;
     private JButton btnGradLineal, btnGradRadial;
     private JButton btnPosterizacion, btnExtraerBits;
 
-    // Botones Pestaña 2: HSV
     private JButton btnFantasmal;
 
-    // Botones Pestaña 3: Convolución
     private JButton btnConvolucion3x3, btnConvolucion9x9;
+    private JButton btnBordes, btnEnfoque, btnAclarar, btnOscurecer, btnEnfoque9x9, btnDesenfoque;
 
     public VentanaPrincipal() {
-        setTitle("Procesador de Imágenes - Proyecto Final");
-        setSize(1050, 700);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setTitle("Procesador de Imágenes");
+        setSize(1200, 750);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // --- PANEL SUPERIOR ---
-        JPanel panelNorte = new JPanel();
-        btnCargarImagen = new JButton("Abrir Imagen 📁");
-        panelNorte.add(btnCargarImagen);
-        add(panelNorte, BorderLayout.NORTH);
+        // 🎨 FONDO GRADIENTE AZUL ELÉCTRICO
+        JPanel fondo = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
 
-        // --- PANEL CENTRAL (IMAGEN) ---
-        lblImagen = new JLabel("Carga una imagen para empezar o genera un gradiente...", SwingConstants.CENTER);
-        JScrollPane scrollImagen = new JScrollPane(lblImagen);
-        add(scrollImagen, BorderLayout.CENTER);
+                GradientPaint gp = new GradientPaint(
+                        0, 0, new Color(255,255,255),
+                        getWidth(), getHeight(), new Color(0,120,255)
+                );
 
-        // --- PANEL INFERIOR (PESTAÑAS) ---
-        JTabbedPane pestanas = new JTabbedPane();
+                g2.setPaint(gp);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
 
-        // 1. Pestaña RGB y Bits
-        JPanel panelRGB = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        btnFiltroGrises = new JButton("Escala de Grises");
+        fondo.setLayout(new BorderLayout(10,10));
+        setContentPane(fondo);
+
+        // ================== TOP ==================
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        top.setOpaque(false);
+
+        btnCargarImagen = new JButton("Abrir Imagen");
+        btnCargarImagen.setFocusable(false);
+        top.add(btnCargarImagen);
+
+        add(top, BorderLayout.NORTH);
+
+        // ================== CENTER ==================
+        JPanel panelImagenes = new JPanel(new GridLayout(1,2,10,10));
+        panelImagenes.setOpaque(false);
+        panelImagenes.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+
+        lblOriginal = new JLabel("Original", SwingConstants.CENTER);
+        lblProcesada = new JLabel("Procesada", SwingConstants.CENTER);
+
+        estilizarLabel(lblOriginal);
+        estilizarLabel(lblProcesada);
+
+        panelImagenes.add(new JScrollPane(lblOriginal));
+        panelImagenes.add(new JScrollPane(lblProcesada));
+
+        add(panelImagenes, BorderLayout.CENTER);
+
+        // ================== TABS ==================
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.setOpaque(false);
+
+        JPanel panelRGB = crearPanelGrid(2,4);
+        btnFiltroGrises = new JButton("Grises");
         btnFiltroNegativo = new JButton("Negativo");
-        btnVidrioEsmerilado = new JButton("Vidrio Esmerilado");
-        btnGradLineal = new JButton("Gradiente Lineal");
-        btnGradRadial = new JButton("Gradiente Radial");
-        btnPosterizacion = new JButton("Retro (4 Colores)");
-        btnExtraerBits = new JButton("Extraer 3 Bits");
+        btnVidrioEsmerilado = new JButton("Vidrio");
+        btnGradLineal = new JButton("Gradiente L");
+        btnGradRadial = new JButton("Gradiente R");
+        btnPosterizacion = new JButton("Poster");
+        btnExtraerBits = new JButton("Bits");
 
         panelRGB.add(btnFiltroGrises);
         panelRGB.add(btnFiltroNegativo);
@@ -58,27 +93,65 @@ public class VentanaPrincipal extends JFrame {
         panelRGB.add(btnPosterizacion);
         panelRGB.add(btnExtraerBits);
 
-        // 2. Pestaña HSV
-        JPanel panelHSV = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        btnFantasmal = new JButton("Efecto Fantasmal (HSB)");
+        JPanel panelHSV = new JPanel(new FlowLayout());
+        panelHSV.setOpaque(false);
+        btnFantasmal = new JButton("Fantasmal");
         panelHSV.add(btnFantasmal);
 
-        // 3. Pestaña Convolución
-        JPanel panelConvolucion = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        btnConvolucion3x3 = new JButton("Desenfoque (Matriz 3x3)");
-        btnConvolucion9x9 = new JButton("Efecto Acuarela (Matriz 9x9)");
-        panelConvolucion.add(btnConvolucion3x3);
-        panelConvolucion.add(btnConvolucion9x9);
+        JPanel panelConv = crearPanelGrid(1,2);
+        btnConvolucion3x3 = new JButton("Blur 3x3");
+        btnConvolucion9x9 = new JButton("Blur 9x9");
+        panelConv.add(btnConvolucion3x3);
+        panelConv.add(btnConvolucion9x9);
 
-        // Agregamos todo al TabbedPane
-        pestanas.addTab("🎨 RGB & Bits", panelRGB);
-        pestanas.addTab("👻 Espacio HSV", panelHSV);
-        pestanas.addTab("🌀 Convolución (For)", panelConvolucion);
+        JPanel panelConv2 = crearPanelGrid(2,3);
+        btnBordes = new JButton("Bordes");
+        btnEnfoque = new JButton("Enfoque");
+        btnAclarar = new JButton("Aclarar");
+        btnOscurecer = new JButton("Oscurecer");
+        btnEnfoque9x9 = new JButton("Enfoque 9x9");
+        btnDesenfoque = new JButton("Blur");
 
-        add(pestanas, BorderLayout.SOUTH);
+        panelConv2.add(btnBordes);
+        panelConv2.add(btnEnfoque);
+        panelConv2.add(btnAclarar);
+        panelConv2.add(btnOscurecer);
+        panelConv2.add(btnEnfoque9x9);
+        panelConv2.add(btnDesenfoque);
+
+        tabs.addTab("RGB", panelRGB);
+        tabs.addTab("HSV", panelHSV);
+        tabs.addTab("Conv Básica", panelConv);
+        tabs.addTab("Conv Avanzada", panelConv2);
+
+        add(tabs, BorderLayout.SOUTH);
     }
 
-    // --- GETTERS (Puertas para el Controlador) ---
+    private JPanel crearPanelGrid(int filas, int cols){
+        JPanel p = new JPanel(new GridLayout(filas, cols, 10,10));
+        p.setOpaque(false);
+        p.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        return p;
+    }
+
+    private void estilizarLabel(JLabel lbl){
+        lbl.setOpaque(true);
+        lbl.setBackground(Color.WHITE);
+        lbl.setBorder(BorderFactory.createLineBorder(new Color(0,120,255),2));
+    }
+
+    // ===== SETTERS =====
+    public void setImagenOriginal(ImageIcon icon) {
+        lblOriginal.setIcon(icon);
+        lblOriginal.setText("");
+    }
+
+    public void setImagenProcesada(ImageIcon icon) {
+        lblProcesada.setIcon(icon);
+        lblProcesada.setText("");
+    }
+
+    // ===== GETTERS =====
     public JButton getBtnCargarImagen() { return btnCargarImagen; }
 
     public JButton getBtnFiltroGrises() { return btnFiltroGrises; }
@@ -94,8 +167,10 @@ public class VentanaPrincipal extends JFrame {
     public JButton getBtnConvolucion3x3() { return btnConvolucion3x3; }
     public JButton getBtnConvolucion9x9() { return btnConvolucion9x9; }
 
-    public void setImagenPantalla(ImageIcon icono) {
-        lblImagen.setIcon(icono);
-        lblImagen.setText("");
-    }
+    public JButton getBtnBordes() { return btnBordes; }
+    public JButton getBtnEnfoque() { return btnEnfoque; }
+    public JButton getBtnAclarar() { return btnAclarar; }
+    public JButton getBtnOscurecer() { return btnOscurecer; }
+    public JButton getBtnEnfoque9x9() { return btnEnfoque9x9; }
+    public JButton getBtnDesenfoque() { return btnDesenfoque; }
 }
