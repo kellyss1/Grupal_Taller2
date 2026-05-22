@@ -15,6 +15,7 @@ public class ControladorImagenes {
 
     private final VentanaPrincipal vista;
     private BufferedImage imagenOriginal;
+    private BufferedImage imagenOriginal2; // Segunda imagen para blending
     private BufferedImage imagenModificada;
 
     public ControladorImagenes(VentanaPrincipal vista) {
@@ -58,6 +59,33 @@ public class ControladorImagenes {
         vista.getBtnFantasmal().addActionListener(e -> aplicarFiltro(() ->
                 imagenModificada = FiltrosBasicos.aplicarFantasmal(imagenOriginal)));
 
+        vista.getBtnRotacionTono().addActionListener(e -> aplicarFiltro(() ->
+                imagenModificada = FiltrosBasicos.aplicarRotacionTono(imagenOriginal)));
+
+        // ==========================================
+        // EVENTOS PESTAÑA: COLORES
+        // ==========================================
+        vista.getBtnMatrizGrises().addActionListener(e -> aplicarFiltro(() ->
+                imagenModificada = MatrizColores.aplicarEscalaGrises(imagenOriginal)));
+
+        vista.getBtnMatrizSepia().addActionListener(e -> aplicarFiltro(() ->
+                imagenModificada = MatrizColores.aplicarSepia(imagenOriginal)));
+
+        vista.getBtnHistograma().addActionListener(e -> aplicarFiltro(() ->
+                imagenModificada = Histograma.histograma(imagenOriginal)));
+
+        // ==========================================
+        // EVENTOS PESTAÑA: BLENDING
+        // ==========================================
+        vista.getBtnAlphaBlending().addActionListener(e -> aplicarFiltroDosImagenes(() ->
+                imagenModificada = Blending.alphaBlending(imagenOriginal, imagenOriginal2)));
+
+        vista.getBtnAdditiveBlending().addActionListener(e -> aplicarFiltroDosImagenes(() ->
+                imagenModificada = Blending.additiveBlending(imagenOriginal, imagenOriginal2)));
+
+        vista.getBtnMultiplicativeBlending().addActionListener(e -> aplicarFiltroDosImagenes(() ->
+                imagenModificada = Blending.multiplicativeBlending(imagenOriginal, imagenOriginal2)));
+
         // ==========================================
         // EVENTOS PESTAÑA 3: CONVOLUCIÓN
         // ==========================================
@@ -90,6 +118,9 @@ public class ControladorImagenes {
                         imagenModificada = ConvolucionMatrices.aplicarKernel(imagenOriginal, ConvolucionMatrices.kBlur, 3)
                 ));
 
+                // Evento para cambiar visibilidad del segundo label según la pestaña
+                // Removido por petición del usuario
+
 
 
     }
@@ -102,7 +133,33 @@ public class ControladorImagenes {
             filtroMatematico.run(); // Ejecuta la línea de código del Modelo que le enviamos
             vista.setImagenProcesada(new ImageIcon(imagenModificada));
         } else {
-            JOptionPane.showMessageDialog(vista, "⚠️ ¡Primero debes abrir una imagen!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vista, "¡Primero debes abrir una imagen!", "Aviso", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void aplicarFiltroDosImagenes(Runnable filtroMatematico) {
+        if (imagenOriginal == null) {
+            JOptionPane.showMessageDialog(vista, "¡Primero debes abrir la primera imagen!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Aviso para seleccionar la segunda imagen
+        JOptionPane.showMessageDialog(vista, "Por favor, seleccione la segunda imagen para realizar el blending.", "Seleccionar Imagen", JOptionPane.INFORMATION_MESSAGE);
+
+        // Cargar la segunda imagen
+        JFileChooser explorador = new JFileChooser();
+        explorador.setDialogTitle("Selecciona la segunda imagen para Blending");
+        int resultado = explorador.showOpenDialog(vista);
+
+        if (resultado == JFileChooser.APPROVE_OPTION) {
+            File archivoSeleccionado = explorador.getSelectedFile();
+            try {
+                imagenOriginal2 = ImageIO.read(archivoSeleccionado);
+                filtroMatematico.run();
+                vista.setImagenProcesada(new ImageIcon(imagenModificada));
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(vista, "Error al leer la segunda imagen: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 

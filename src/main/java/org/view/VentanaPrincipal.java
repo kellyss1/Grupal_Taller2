@@ -6,7 +6,10 @@ import java.awt.*;
 public class VentanaPrincipal extends JFrame {
 
     private JLabel lblOriginal;
+    private JLabel lblOriginal2;
+    private JScrollPane scrollOriginal2; // Referencia para ocultar/mostrar
     private JLabel lblProcesada;
+    private JTabbedPane tabs;
 
     private JButton btnCargarImagen;
 
@@ -14,7 +17,11 @@ public class VentanaPrincipal extends JFrame {
     private JButton btnGradLineal, btnGradRadial;
     private JButton btnPosterizacion, btnExtraerBits;
 
-    private JButton btnFantasmal;
+    private JButton btnFantasmal, btnRotacionTono;
+
+    private JButton btnMatrizGrises, btnMatrizSepia, btnHistograma;
+
+    private JButton btnAlphaBlending, btnAdditiveBlending, btnMultiplicativeBlending;
 
     private JButton btnConvolucion3x3, btnConvolucion9x9;
     private JButton btnBordes, btnEnfoque, btnAclarar, btnOscurecer, btnEnfoque9x9, btnDesenfoque;
@@ -73,7 +80,7 @@ public class VentanaPrincipal extends JFrame {
         add(panelImagenes, BorderLayout.CENTER);
 
         // ================== TABS ==================
-        JTabbedPane tabs = new JTabbedPane();
+        tabs = new JTabbedPane();
         tabs.setOpaque(false);
 
         JPanel panelRGB = crearPanelGrid(2,4);
@@ -93,10 +100,11 @@ public class VentanaPrincipal extends JFrame {
         panelRGB.add(btnPosterizacion);
         panelRGB.add(btnExtraerBits);
 
-        JPanel panelHSV = new JPanel(new FlowLayout());
-        panelHSV.setOpaque(false);
+        JPanel panelHSV = crearPanelGrid(1,2);
         btnFantasmal = new JButton("Fantasmal");
+        btnRotacionTono = new JButton("Rotar Tono");
         panelHSV.add(btnFantasmal);
+        panelHSV.add(btnRotacionTono);
 
         JPanel panelConv = crearPanelGrid(1,2);
         btnConvolucion3x3 = new JButton("Blur 3x3");
@@ -121,6 +129,25 @@ public class VentanaPrincipal extends JFrame {
 
         tabs.addTab("RGB", panelRGB);
         tabs.addTab("HSV", panelHSV);
+
+        JPanel panelMatrices = crearPanelGrid(1,3);
+        btnMatrizGrises = new JButton("Escala de Grises");
+        btnMatrizSepia = new JButton("Sepia");
+        btnHistograma = new JButton("Histograma");
+        panelMatrices.add(btnMatrizGrises);
+        panelMatrices.add(btnMatrizSepia);
+        panelMatrices.add(btnHistograma);
+        tabs.addTab("Colores", panelMatrices);
+
+        JPanel panelBlending = crearPanelGrid(1,3);
+        btnAlphaBlending = new JButton("Alpha Blending");
+        btnAdditiveBlending = new JButton("Additive Blending");
+        btnMultiplicativeBlending = new JButton("Multiplicative Blending");
+        panelBlending.add(btnAlphaBlending);
+        panelBlending.add(btnAdditiveBlending);
+        panelBlending.add(btnMultiplicativeBlending);
+        tabs.addTab("Blending", panelBlending);
+
         tabs.addTab("Conv Básica", panelConv);
         tabs.addTab("Conv Avanzada", panelConv2);
 
@@ -142,16 +169,55 @@ public class VentanaPrincipal extends JFrame {
 
     // ===== SETTERS =====
     public void setImagenOriginal(ImageIcon icon) {
-        lblOriginal.setIcon(icon);
-        lblOriginal.setText("");
+        if (icon != null) {
+            lblOriginal.setIcon(escalarImagen(icon, lblOriginal));
+        } else {
+            lblOriginal.setIcon(null);
+        }
+        lblOriginal.setText(icon == null ? "Original" : "");
     }
 
     public void setImagenProcesada(ImageIcon icon) {
-        lblProcesada.setIcon(icon);
-        lblProcesada.setText("");
+        if (icon != null) {
+            lblProcesada.setIcon(escalarImagen(icon, lblProcesada));
+        } else {
+            lblProcesada.setIcon(null);
+        }
+        lblProcesada.setText(icon == null ? "Procesada" : "");
+    }
+
+    private ImageIcon escalarImagen(ImageIcon icon, JLabel label) {
+        // Obtenemos el tamaño del contenedor (el JScrollPane o el panel)
+        // Como el label está en un scrollpane, el tamaño puede ser engañoso.
+        // Vamos a usar un tamaño máximo razonable basado en la ventana si no tiene tamaño aún.
+        int maxW = label.getParent().getWidth();
+        int maxH = label.getParent().getHeight();
+
+        if (maxW <= 0) maxW = 500;
+        if (maxH <= 0) maxH = 500;
+
+        Image img = icon.getImage();
+        int imgW = img.getWidth(null);
+        int imgH = img.getHeight(null);
+
+        double ratio = Math.min((double) maxW / imgW, (double) maxH / imgH);
+        
+        // Solo escalar si la imagen es más grande que el espacio disponible
+        if (ratio < 1.0) {
+            int newW = (int) (imgW * ratio);
+            int newH = (int) (imgH * ratio);
+            return new ImageIcon(img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH));
+        }
+        
+        return icon;
+    }
+
+    public void mostrarSegundoLabel(boolean visible) {
+        // Eliminado por petición
     }
 
     // ===== GETTERS =====
+    public JTabbedPane getTabs() { return tabs; }
     public JButton getBtnCargarImagen() { return btnCargarImagen; }
 
     public JButton getBtnFiltroGrises() { return btnFiltroGrises; }
@@ -163,6 +229,15 @@ public class VentanaPrincipal extends JFrame {
     public JButton getBtnExtraerBits() { return btnExtraerBits; }
 
     public JButton getBtnFantasmal() { return btnFantasmal; }
+    public JButton getBtnRotacionTono() { return btnRotacionTono; }
+
+    public JButton getBtnMatrizGrises() { return btnMatrizGrises; }
+    public JButton getBtnMatrizSepia() { return btnMatrizSepia; }
+    public JButton getBtnHistograma() { return btnHistograma; }
+
+    public JButton getBtnAlphaBlending() { return btnAlphaBlending; }
+    public JButton getBtnAdditiveBlending() { return btnAdditiveBlending; }
+    public JButton getBtnMultiplicativeBlending() { return btnMultiplicativeBlending; }
 
     public JButton getBtnConvolucion3x3() { return btnConvolucion3x3; }
     public JButton getBtnConvolucion9x9() { return btnConvolucion9x9; }
