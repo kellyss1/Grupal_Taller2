@@ -44,6 +44,23 @@ public class Main {
 
         glfwMakeContextCurrent(window);
 
+        // Callback para ajustar el viewport cuando se cambia el tamaño de la ventana
+        glfwSetFramebufferSizeCallback(window, (window, width, height) -> {
+            glViewport(0, 0, width, height);
+            
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            float aspectRatio = (float) width / (float) height;
+            if (width >= height) {
+                // Ventana ancha
+                glFrustum(-aspectRatio, aspectRatio, -1, 1, 1, 100);
+            } else {
+                // Ventana alta
+                glFrustum(-1, 1, -1/aspectRatio, 1/aspectRatio, 1, 100);
+            }
+            glMatrixMode(GL_MODELVIEW);
+        });
+
         glfwSwapInterval(1);
 
         GL.createCapabilities();
@@ -59,17 +76,22 @@ public class Main {
 
     private void init() {
 
+        // Configuración inicial del viewport
+        int[] width = new int[1];
+        int[] height = new int[1];
+        glfwGetFramebufferSize(window, width, height);
+        glViewport(0, 0, width[0], height[0]);
+
         // Configuración de la proyección 3D
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
 
-        glFrustum(
-                -1,
-                1,
-                -1,
-                1,
-                1,
-                100);
+        float aspectRatio = (float) width[0] / (float) height[0];
+        if (width[0] >= height[0]) {
+            glFrustum(-aspectRatio, aspectRatio, -1, 1, 1, 100);
+        } else {
+            glFrustum(-1, 1, -1/aspectRatio, 1/aspectRatio, 1, 100);
+        }
 
         glMatrixMode(GL_MODELVIEW);
 
@@ -84,8 +106,11 @@ public class Main {
 
             BufferedImage original =
                     ImageIO.read(
-                            new File(
-                                    "src/main/resources/images.jpg"));
+                            Main.class.getResourceAsStream("/images.jpg"));
+
+            if (original == null) {
+                throw new Exception("No se pudo encontrar la imagen en resources/images.jpg");
+            }
 
             BufferedImage gris =
                     ImageProcessor.escalaGrises(

@@ -96,6 +96,9 @@
                 <version>3.6.0</version>
                 <configuration>
                     <mainClass>com.imagen.procesamientoimagen.Main</mainClass>
+                    <arguments>
+                        <argument>--enable-native-access=ALL-UNNAMED</argument>
+                    </arguments>
                 </configuration>
             </plugin>
 

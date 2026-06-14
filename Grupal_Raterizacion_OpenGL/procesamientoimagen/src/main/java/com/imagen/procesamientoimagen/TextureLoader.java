@@ -3,31 +3,11 @@ package com.imagen.procesamientoimagen;
 import org.lwjgl.BufferUtils;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.nio.ByteBuffer;
-
-import javax.imageio.ImageIO;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class TextureLoader {
-
-    public static int loadTexture(String path) {
-
-        try {
-
-            BufferedImage image =
-                    ImageIO.read(new File(path));
-
-            return loadTexture(image);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
-        return -1;
-    }
 
     public static int loadTexture(BufferedImage image) {
 
