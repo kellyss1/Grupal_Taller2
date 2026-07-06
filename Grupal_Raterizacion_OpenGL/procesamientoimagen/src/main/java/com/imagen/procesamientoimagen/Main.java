@@ -20,9 +20,6 @@ public class Main {
     // Imagen original móvil
     private float zOriginal = -5.0f;
 
-    // Imagen gris fija
-    private final float zGris = -8.0f;
-
     public void run() {
 
         if (!glfwInit()) {
@@ -180,6 +177,8 @@ public class Main {
 
         // Imagen procesada (escala de grises)
         // permanece fija en el fondo
+        // Imagen gris fija
+        float zGris = -8.0f;
         dibujarTextura(
                 textureGris,
                 zGris,
