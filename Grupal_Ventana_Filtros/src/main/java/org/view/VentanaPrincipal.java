@@ -8,10 +8,25 @@ public class VentanaPrincipal extends JFrame {
     private JLabel lblOriginal;
     private JLabel lblOriginal2;
     private JScrollPane scrollOriginal2; // Referencia para ocultar/mostrar
+    private JScrollPane scrollOriginal;
     private JLabel lblProcesada;
     private JTabbedPane tabs;
+    
+    private JSlider sliderZA, sliderZB, sliderAlpha;
+    private JButton btnZTest;
+    private JPanel panelControlesZ;
+    private JPanel panelControlesW; // Panel para botones de modo W
+    private JPanel panelControlesAlpha; // Panel para el Alpha Test
+    private JPanel panelControlesStencil; // Panel para Stencil/Blending/Op
+    private JPanel panelControlesBuffer; // Panel para Buffer de Acumulación
+    private JPanel panelControlesEcualizador; // Panel para Ecualizador
+    private JLabel lblHistoOriginal, lblHistoEcualizado;
+    private JPanel panelContenedorDerecho; // Contenedor para los paneles laterales
+    private JButton[] btnsModosW; // Botones para los 5 modos
+    private JButton btnModoStencil, btnModoBlending, btnModoFinal;
+    private JSlider sliderBuffer, sliderEcualizador;
 
-    private JButton btnCargarImagen;
+    private JButton btnCargarImagen, btnCargarImagen2;
 
     private JButton btnFiltroGrises, btnFiltroNegativo, btnVidrioEsmerilado;
     private JButton btnGradLineal, btnGradRadial;
@@ -25,6 +40,7 @@ public class VentanaPrincipal extends JFrame {
 
     private JButton btnConvolucion3x3, btnConvolucion9x9;
     private JButton btnBordes, btnEnfoque, btnAclarar, btnOscurecer, btnEnfoque9x9, btnDesenfoque;
+    private JButton btnRasterizacion, btnTextura, btnMultisample, btnStencil, btnBufferAcumulacion, btnEcualizador;
 
     public VentanaPrincipal() {
 
@@ -57,9 +73,13 @@ public class VentanaPrincipal extends JFrame {
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
         top.setOpaque(false);
 
-        btnCargarImagen = new JButton("Abrir Imagen");
+        btnCargarImagen = new JButton("Agregar Imagen 1");
         btnCargarImagen.setFocusable(false);
         top.add(btnCargarImagen);
+
+        btnCargarImagen2 = new JButton("Agregar Imagen 2");
+        btnCargarImagen2.setFocusable(false);
+        top.add(btnCargarImagen2);
 
         add(top, BorderLayout.NORTH);
 
@@ -68,16 +88,143 @@ public class VentanaPrincipal extends JFrame {
         panelImagenes.setOpaque(false);
         panelImagenes.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
-        lblOriginal = new JLabel("Original", SwingConstants.CENTER);
+        lblOriginal = new JLabel("Original 1", SwingConstants.CENTER);
+        lblOriginal2 = new JLabel("Original 2", SwingConstants.CENTER);
         lblProcesada = new JLabel("Procesada", SwingConstants.CENTER);
 
         estilizarLabel(lblOriginal);
+        estilizarLabel(lblOriginal2);
         estilizarLabel(lblProcesada);
 
-        panelImagenes.add(new JScrollPane(lblOriginal));
+        scrollOriginal = new JScrollPane(lblOriginal);
+        scrollOriginal2 = new JScrollPane(lblOriginal2);
+        
+        panelImagenes.add(scrollOriginal);
+        panelImagenes.add(scrollOriginal2);
         panelImagenes.add(new JScrollPane(lblProcesada));
 
+        // Por defecto, ocultar la segunda imagen si no es necesaria
+        scrollOriginal2.setVisible(false);
+
         add(panelImagenes, BorderLayout.CENTER);
+
+        // ================== CONTENEDOR DERECHO ==================
+        panelContenedorDerecho = new JPanel(new CardLayout());
+        panelContenedorDerecho.setOpaque(false);
+
+        // ================== CONTROLES Z (Ocultos por defecto) ==================
+        panelControlesZ = new JPanel();
+        panelControlesZ.setLayout(new BoxLayout(panelControlesZ, BoxLayout.Y_AXIS));
+        panelControlesZ.setOpaque(false);
+        panelControlesZ.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+
+        sliderZA = new JSlider(10, 90, 40);
+        sliderZB = new JSlider(10, 90, 60);
+        btnZTest = new JButton("Z-Test: ON");
+
+        panelControlesZ.add(new JLabel("Profundidad Textura"));
+        panelControlesZ.add(sliderZA);
+        panelControlesZ.add(new JLabel("Profundidad Magenta"));
+        panelControlesZ.add(sliderZB);
+        panelControlesZ.add(btnZTest);
+
+        panelContenedorDerecho.add(panelControlesZ, "Z");
+
+        // ================== CONTROLES W (Ocultos por defecto) ==================
+        panelControlesW = new JPanel();
+        panelControlesW.setLayout(new BoxLayout(panelControlesW, BoxLayout.Y_AXIS));
+        panelControlesW.setOpaque(false);
+        panelControlesW.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+
+        btnsModosW = new JButton[5];
+        String[] nombresModos = {"Textura", "Color", "Profundidad 1/W", "W-Buffer", "Completo"};
+        for (int i = 0; i < 5; i++) {
+            btnsModosW[i] = new JButton(nombresModos[i]);
+            btnsModosW[i].setAlignmentX(Component.CENTER_ALIGNMENT);
+            btnsModosW[i].setMaximumSize(new Dimension(200, 40));
+            panelControlesW.add(btnsModosW[i]);
+            panelControlesW.add(Box.createRigidArea(new Dimension(0, 5)));
+        }
+
+        panelContenedorDerecho.add(panelControlesW, "W");
+
+        // ================== CONTROLES ALPHA (Ocultos por defecto) ==================
+        panelControlesAlpha = new JPanel();
+        panelControlesAlpha.setLayout(new BoxLayout(panelControlesAlpha, BoxLayout.Y_AXIS));
+        panelControlesAlpha.setOpaque(false);
+        panelControlesAlpha.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        sliderAlpha = new JSlider(0, 100, 40);
+        panelControlesAlpha.add(new JLabel("Alpha Threshold"));
+        panelControlesAlpha.add(sliderAlpha);
+
+        panelContenedorDerecho.add(panelControlesAlpha, "ALPHA");
+
+        // ================== CONTROLES STENCIL (Ocultos por defecto) ==================
+        panelControlesStencil = new JPanel();
+        panelControlesStencil.setLayout(new BoxLayout(panelControlesStencil, BoxLayout.Y_AXIS));
+        panelControlesStencil.setOpaque(false);
+        panelControlesStencil.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        btnModoStencil = new JButton("Modo Stencil");
+        btnModoBlending = new JButton("Modo Blending");
+        btnModoFinal = new JButton("Resultado Final");
+
+        btnModoStencil.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnModoBlending.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnModoFinal.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        panelControlesStencil.add(btnModoStencil);
+        panelControlesStencil.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelControlesStencil.add(btnModoBlending);
+        panelControlesStencil.add(Box.createRigidArea(new Dimension(0, 5)));
+        panelControlesStencil.add(btnModoFinal);
+
+        panelContenedorDerecho.add(panelControlesStencil, "STENCIL");
+
+        // ================== CONTROLES BUFFER (Ocultos por defecto) ==================
+        panelControlesBuffer = new JPanel();
+        panelControlesBuffer.setLayout(new BoxLayout(panelControlesBuffer, BoxLayout.Y_AXIS));
+        panelControlesBuffer.setOpaque(false);
+        panelControlesBuffer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        sliderBuffer = new JSlider(0, 100, 100);
+        panelControlesBuffer.add(new JLabel("Factor de Atenuación"));
+        panelControlesBuffer.add(sliderBuffer);
+
+        panelContenedorDerecho.add(panelControlesBuffer, "BUFFER");
+
+        // ================== CONTROLES ECUALIZADOR (Ocultos por defecto) ==================
+        panelControlesEcualizador = new JPanel();
+        panelControlesEcualizador.setLayout(new BoxLayout(panelControlesEcualizador, BoxLayout.Y_AXIS));
+        panelControlesEcualizador.setOpaque(false);
+        panelControlesEcualizador.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        sliderEcualizador = new JSlider(0, 100, 100);
+        panelControlesEcualizador.add(new JLabel("Porcentaje Ecualización"));
+        panelControlesEcualizador.add(sliderEcualizador);
+
+        panelControlesEcualizador.add(Box.createRigidArea(new Dimension(0, 10)));
+        panelControlesEcualizador.add(new JLabel("Histograma Original:"));
+        lblHistoOriginal = new JLabel();
+        lblHistoOriginal.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelControlesEcualizador.add(lblHistoOriginal);
+
+        panelControlesEcualizador.add(Box.createRigidArea(new Dimension(0, 10)));
+        panelControlesEcualizador.add(new JLabel("Histograma Resultante:"));
+        lblHistoEcualizado = new JLabel();
+        lblHistoEcualizado.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelControlesEcualizador.add(lblHistoEcualizado);
+
+        panelContenedorDerecho.add(panelControlesEcualizador, "ECUALIZADOR");
+
+        // Panel vacío para cuando no hay controles activos
+        JPanel panelVacio = new JPanel();
+        panelVacio.setOpaque(false);
+        panelContenedorDerecho.add(panelVacio, "VACIO");
+
+        add(panelContenedorDerecho, BorderLayout.EAST);
+        ((CardLayout) panelContenedorDerecho.getLayout()).show(panelContenedorDerecho, "VACIO");
 
         // ================== TABS ==================
         tabs = new JTabbedPane();
@@ -151,6 +298,25 @@ public class VentanaPrincipal extends JFrame {
         tabs.addTab("Conv Básica", panelConv);
         tabs.addTab("Conv Avanzada", panelConv2);
 
+        JPanel panelGrupales = crearPanelGrid(2, 3);
+        btnRasterizacion = new JButton("Rasterizacion/Z-Buffer/Bitmaps");
+        btnTextura = new JButton("Textura/Interpolacion/W-Buffereing");
+        btnMultisample = new JButton("Multisample/AlphaTest");
+        btnStencil = new JButton("Stencil/Blending/Op");
+        btnBufferAcumulacion = new JButton("BufferAcumulacion");
+
+        panelGrupales.add(btnRasterizacion);
+        panelGrupales.add(btnTextura);
+        panelGrupales.add(btnMultisample);
+        panelGrupales.add(btnStencil);
+        panelGrupales.add(btnBufferAcumulacion);
+        tabs.addTab("Grupales", panelGrupales);
+
+        JPanel panelEcua = crearPanelGrid(1, 1);
+        btnEcualizador = new JButton("Ecualizar Histograma");
+        panelEcua.add(btnEcualizador);
+        tabs.addTab("Ecualizador", panelEcua);
+
         add(tabs, BorderLayout.SOUTH);
     }
 
@@ -174,7 +340,16 @@ public class VentanaPrincipal extends JFrame {
         } else {
             lblOriginal.setIcon(null);
         }
-        lblOriginal.setText(icon == null ? "Original" : "");
+        lblOriginal.setText(icon == null ? "Original 1" : "");
+    }
+
+    public void setImagenOriginal2(ImageIcon icon) {
+        if (icon != null) {
+            lblOriginal2.setIcon(escalarImagen(icon, lblOriginal2));
+        } else {
+            lblOriginal2.setIcon(null);
+        }
+        lblOriginal2.setText(icon == null ? "Original 2" : "");
     }
 
     public void setImagenProcesada(ImageIcon icon) {
@@ -213,12 +388,75 @@ public class VentanaPrincipal extends JFrame {
     }
 
     public void mostrarSegundoLabel(boolean visible) {
-        // Eliminado por petición
+        scrollOriginal.setVisible(true);
+        scrollOriginal2.setVisible(visible);
+        ((CardLayout) panelContenedorDerecho.getLayout()).show(panelContenedorDerecho, "VACIO");
+        revalidate();
+        repaint();
+    }
+
+    public void mostrarControlesZ() {
+        scrollOriginal.setVisible(false);
+        scrollOriginal2.setVisible(false);
+        ((CardLayout) panelContenedorDerecho.getLayout()).show(panelContenedorDerecho, "Z");
+        revalidate();
+        repaint();
+    }
+
+    public void mostrarControlesW() {
+        scrollOriginal.setVisible(false);
+        scrollOriginal2.setVisible(false);
+        ((CardLayout) panelContenedorDerecho.getLayout()).show(panelContenedorDerecho, "W");
+        revalidate();
+        repaint();
+    }
+
+    public void mostrarControlesAlpha() {
+        scrollOriginal.setVisible(false);
+        scrollOriginal2.setVisible(false);
+        ((CardLayout) panelContenedorDerecho.getLayout()).show(panelContenedorDerecho, "ALPHA");
+        revalidate();
+        repaint();
+    }
+
+    public void mostrarControlesStencil() {
+        scrollOriginal.setVisible(true);
+        scrollOriginal2.setVisible(true);
+        ((CardLayout) panelContenedorDerecho.getLayout()).show(panelContenedorDerecho, "STENCIL");
+        revalidate();
+        repaint();
+    }
+
+    public void mostrarControlesBuffer() {
+        scrollOriginal.setVisible(true);
+        scrollOriginal2.setVisible(false);
+        ((CardLayout) panelContenedorDerecho.getLayout()).show(panelContenedorDerecho, "BUFFER");
+        revalidate();
+        repaint();
+    }
+
+    public void mostrarControlesEcualizador() {
+        scrollOriginal.setVisible(true);
+        scrollOriginal2.setVisible(false);
+        ((CardLayout) panelContenedorDerecho.getLayout()).show(panelContenedorDerecho, "ECUALIZADOR");
+        revalidate();
+        repaint();
+    }
+
+    public void setHistoOriginal(ImageIcon icon) {
+        lblHistoOriginal.setIcon(icon);
+        lblHistoOriginal.setText(icon == null ? "Sin histograma" : "");
+    }
+
+    public void setHistoEcualizado(ImageIcon icon) {
+        lblHistoEcualizado.setIcon(icon);
+        lblHistoEcualizado.setText(icon == null ? "Sin histograma" : "");
     }
 
     // ===== GETTERS =====
     public JTabbedPane getTabs() { return tabs; }
     public JButton getBtnCargarImagen() { return btnCargarImagen; }
+    public JButton getBtnCargarImagen2() { return btnCargarImagen2; }
 
     public JButton getBtnFiltroGrises() { return btnFiltroGrises; }
     public JButton getBtnFiltroNegativo() { return btnFiltroNegativo; }
@@ -248,4 +486,24 @@ public class VentanaPrincipal extends JFrame {
     public JButton getBtnOscurecer() { return btnOscurecer; }
     public JButton getBtnEnfoque9x9() { return btnEnfoque9x9; }
     public JButton getBtnDesenfoque() { return btnDesenfoque; }
+
+    public JButton getBtnRasterizacion() { return btnRasterizacion; }
+    public JButton getBtnTextura() { return btnTextura; }
+    public JButton getBtnMultisample() { return btnMultisample; }
+    public JButton getBtnStencil() { return btnStencil; }
+    public JButton getBtnBufferAcumulacion() { return btnBufferAcumulacion; }
+    public JButton getBtnEcualizador() { return btnEcualizador; }
+
+    public JSlider getSliderZA() { return sliderZA; }
+    public JSlider getSliderZB() { return sliderZB; }
+    public JSlider getSliderAlpha() { return sliderAlpha; }
+    public JSlider getSliderBuffer() { return sliderBuffer; }
+    public JSlider getSliderEcualizador() { return sliderEcualizador; }
+    public JButton getBtnZTest() { return btnZTest; }
+
+    public JButton getBtnModoStencil() { return btnModoStencil; }
+    public JButton getBtnModoBlending() { return btnModoBlending; }
+    public JButton getBtnModoFinal() { return btnModoFinal; }
+
+    public JButton[] getBtnsModosW() { return btnsModosW; }
 }

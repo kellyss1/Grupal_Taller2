@@ -11,7 +11,7 @@ public class Main {
 
         FlatLightLaf.setup();
 
-        // 🎨 PALETA BLANCO + AZUL ELÉCTRICO
+        // PALETA BLANCO + AZUL ELÉCTRICO
         UIManager.put("Component.arc", 15);
         UIManager.put("Button.arc", 15);
         UIManager.put("TextComponent.arc", 10);
