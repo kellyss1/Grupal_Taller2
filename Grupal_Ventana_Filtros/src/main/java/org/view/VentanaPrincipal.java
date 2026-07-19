@@ -49,7 +49,7 @@ public class VentanaPrincipal extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // 🎨 FONDO GRADIENTE AZUL ELÉCTRICO
+        // 🎨 FONDO GRADIENTE MORADO
         JPanel fondo = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -58,7 +58,7 @@ public class VentanaPrincipal extends JFrame {
 
                 GradientPaint gp = new GradientPaint(
                         0, 0, new Color(255,255,255),
-                        getWidth(), getHeight(), new Color(0,120,255)
+                        getWidth(), getHeight(), new Color(128,0,255)
                 );
 
                 g2.setPaint(gp);
